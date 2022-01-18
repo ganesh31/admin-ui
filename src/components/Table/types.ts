@@ -1,12 +1,13 @@
 export interface TableColumn {
   id: string;
   value: string;
+  needSearch?: boolean;
 }
 
 export interface TableCell {
   id: string;
   value: string;
-  colId?: number;
+  colId?: string;
 }
 
 export interface TableRow {

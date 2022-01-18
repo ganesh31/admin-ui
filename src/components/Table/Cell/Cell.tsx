@@ -1,13 +1,11 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode } from 'react';
 
 interface Props {
-  children: ReactNode
+  children: ReactNode;
 }
 
 const Cell = (props: Props) => {
-  return (
-    <td className='text-center'>{props.children}</td>
-  )
-}
+  return <td className="text-left p-4 min-w-full">{props.children}</td>;
+};
 
-export default Cell
+export default Cell;

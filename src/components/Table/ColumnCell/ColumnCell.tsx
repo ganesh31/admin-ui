@@ -1,14 +1,66 @@
-import React, { ReactNode } from 'react'
+import React, { ChangeEvent, useState } from 'react';
+import { MdOutlineYoutubeSearchedFor } from 'react-icons/md';
 
+import SearchBar from '../../SearchBar';
+
+interface SearchObj {
+  columnId: string;
+  searchText: string;
+}
 interface Props {
-  children: ReactNode
+  value: string;
+  id: string;
+  needSearch?: boolean;
+  onSearch?: ({ columnId, searchText }: SearchObj) => void;
+  onFocus: (id: string) => void;
 }
 
+const ColumnCell: React.FC<Props> = (props: Props) => {
+  const [showSearchBar, setShowSearchBar] = useState(false);
 
-const ColumnCell = (props: Props) => {
+  const onShowSearchBar = () => {
+    setShowSearchBar(true);
+  };
+
+  const onHideSearchBar = () => {
+    setShowSearchBar(false);
+  };
+
+  const onSearch = (event: ChangeEvent<HTMLInputElement>) => {
+    const searchObj: SearchObj = {
+      columnId: props.id,
+      searchText: event.target.value,
+    };
+    if (props.onSearch) props.onSearch(searchObj);
+  };
+
+  if (!showSearchBar) {
+    const cellWithIcon = (
+      <span className="flex justify-between align-middle">
+        {props.value}
+        {props.needSearch && (
+          <MdOutlineYoutubeSearchedFor
+            className="text-2xl"
+            onClick={onShowSearchBar}
+          />
+        )}
+      </span>
+    );
+    return <th className="text-left p-4">{cellWithIcon}</th>;
+  }
+
   return (
-    <th>{props.children}</th>
-  )
-}
+    <th className="text-left p-4">
+      <SearchBar
+        placeholder={props.value}
+        name={props.value}
+        onChange={onSearch}
+        onHideSearchBar={onHideSearchBar}
+        onFocus={() => props.onFocus(props.id)}
+        showClose
+      />
+    </th>
+  );
+};
 
-export default ColumnCell
+export default ColumnCell;
