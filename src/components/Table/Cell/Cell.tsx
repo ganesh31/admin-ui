@@ -4,7 +4,7 @@ interface Props {
   children: ReactNode;
 }
 
-const Cell = (props: Props) => {
+const Cell: React.FC<Props> = (props: Props) => {
   return <td className="text-left p-4 min-w-full">{props.children}</td>;
 };
 

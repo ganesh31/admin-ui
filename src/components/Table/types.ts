@@ -2,6 +2,7 @@ export interface TableColumn {
   id: string;
   value: string;
   needSearch?: boolean;
+  isEditable?: boolean;
 }
 
 export interface TableCell {

@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import Table from './components';
+import SearchBar from './components/SearchBar';
 import { TableColumn, TableRow } from './components/Table/types';
 
 interface Member {
@@ -41,9 +42,9 @@ const App: React.FC = () => {
           ({ id, name, email, role }) => ({
             id,
             cells: [
-              { id: '1', value: name, colId: '1' },
-              { id: '2', value: email, colId: '2' },
-              { id: '3', value: role, colId: '3' },
+              { id: '1', value: name, colId: '1', isEditable: true },
+              { id: '2', value: email, colId: '2', isEditable: true },
+              { id: '3', value: role, colId: '3', isEditable: true },
             ],
           }),
         );
@@ -76,6 +77,7 @@ const App: React.FC = () => {
   const onDelete = (selectedId: string) => {
     const newRowList = rowList.filter(({ id }) => id !== selectedId);
     setRowList(newRowList);
+    setSelectedIdList([...selectedIdList].filter((id) => id !== selectedId));
   };
 
   const onDeleteSelected = () => {
@@ -94,9 +96,13 @@ const App: React.FC = () => {
     setFilters(filters.filter(({ id }) => id !== filterId));
   };
 
-  const onGlobalSearch = (searchText: string) => {
+  const onGlobalSearch = (event: ChangeEvent<HTMLInputElement>) => {
+    const { value: searchText } = event.target;
+
     setGlobalSearchText(searchText);
   };
+
+  const onGlobalSearchClear = () => setGlobalSearchText('');
 
   const onSearchByColumn = ({
     columnId,
@@ -154,23 +160,30 @@ const App: React.FC = () => {
 
   const filteredRows = getFilteredRowsGlobalCol();
   return (
-    <Table
-      name="GlobalSearch"
-      placeholder="Search by name, email or role"
-      columns={colList}
-      noOfRowsPerPage={PAGE_SIZE}
-      rows={filteredRows}
-      selectAll={selectAll}
-      selectedIdList={selectedIdList}
-      onSelect={onToggleSelect}
-      onSelectAll={onToggleSelectAll}
-      onDelete={onDelete}
-      onDeleteSelcted={onDeleteSelected}
-      onSearch={onSearchByColumn}
-      onRemoveFilter={onRemoveFilter}
-      onGlobalSearch={onGlobalSearch}
-      filters={filters}
-    />
+    <main className="m-10">
+      <SearchBar
+        value={globalSearchText}
+        name="GlobalSearch"
+        placeholder="Search by name, email or role"
+        onChange={onGlobalSearch}
+        showClose
+        onClose={onGlobalSearchClear}
+      />
+      <Table
+        columns={colList}
+        noOfRowsPerPage={PAGE_SIZE}
+        rows={filteredRows}
+        selectAll={selectAll}
+        selectedIdList={selectedIdList}
+        onSelect={onToggleSelect}
+        onSelectAll={onToggleSelectAll}
+        onDelete={onDelete}
+        onDeleteSelcted={onDeleteSelected}
+        onSearch={onSearchByColumn}
+        onRemoveFilter={onRemoveFilter}
+        filters={filters}
+      />
+    </main>
   );
 };
 

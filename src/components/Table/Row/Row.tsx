@@ -8,6 +8,7 @@ interface Props {
   cells: TableCell[];
   id: string;
   selected: boolean;
+  onEnableEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
   onSelect: (id: string) => void;
 }
@@ -32,7 +33,10 @@ const Row: React.FC<Props> = (props: Props) => {
 
     const actions = (
       <td key="Actions" className="flex p-4 text-xl">
-        <MdEdit className="mr-3" />
+        <MdEdit
+          className="mr-3"
+          onClick={() => props.onEnableEdit && props.onEnableEdit(props.id)}
+        />
         <MdDeleteForever
           className="text-red-500 cursor-pointer"
           onClick={() => props.onDelete && props.onDelete(props.id)}

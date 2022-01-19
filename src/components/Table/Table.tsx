@@ -13,8 +13,6 @@ interface SearchObj {
 interface Props {
   columns: TableColumn[];
   rows: TableRow[];
-  name: string;
-  placeholder: string;
   filters: ColumnSearch[];
   noOfRowsPerPage: number;
   selectAll?: boolean;
@@ -22,10 +20,10 @@ interface Props {
 
   onSelectAll?: () => void;
   onSelect?: (id: string) => void;
+  onEnableEdit?: (id: string) => void;
   onDelete: (id: string) => void;
   onDeleteSelcted?: () => void;
   onSearch?: (searchObj: SearchObj) => void;
-  onGlobalSearch: (searchTex: string) => void;
   onRemoveFilter?: (id: string) => void;
 }
 
@@ -45,12 +43,10 @@ const Table: React.FC<Props> = (props: Props) => {
   }, [currentPage, props.noOfRowsPerPage, props.rows]);
 
   const handleSelectAll = (): void => {
-    console.log('All Rows are selected');
     if (props.onSelectAll) props.onSelectAll();
   };
 
   const handleSelect = (id: string): void => {
-    console.log('Selected ROw Id', id);
     if (props.onSelect) props.onSelect(id);
   };
 
@@ -70,16 +66,9 @@ const Table: React.FC<Props> = (props: Props) => {
     if (props.onSearch) props.onSearch({ columnId, searchText });
   };
 
-  const handleGlobalSearch = (event: ChangeEvent<HTMLInputElement>) => {
-    const { value: searchText } = event.target;
-
-    props.onGlobalSearch(searchText);
-  };
-
   const renderRows = (): JSX.Element[] => {
     return currentTableData.map(({ id, cells }) => {
       const rowSelected = props.selectedIdList?.includes(id);
-      // const selected = props.selectAll || rowSelected;
       return (
         <Row
           key={id}
@@ -88,21 +77,14 @@ const Table: React.FC<Props> = (props: Props) => {
           selected={Boolean(rowSelected)}
           onSelect={() => handleSelect(id)}
           onDelete={props.onDelete}
+          onEnableEdit={props.onEnableEdit}
         />
       );
     });
   };
 
   return (
-    <main className="m-10">
-      {/* <div className="w-full h-5 flex">{renderBadge()}</div> */}
-      <div className="">
-        <SearchBar
-          name={props.name}
-          placeholder={props.placeholder}
-          onChange={handleGlobalSearch}
-        />
-      </div>
+    <div>
       <table className="w-full mt-5">
         <thead>
           <Column
@@ -119,7 +101,9 @@ const Table: React.FC<Props> = (props: Props) => {
         <button
           className="ml-5 px-3 rounded-md border border-red-600 text-white bg-red-600"
           onClick={props.onDeleteSelcted}>
-          Delete Selected
+          {props.selectedIdList && props.selectedIdList.length > 0
+            ? `Delete Selected - (${props.selectedIdList.length})`
+            : 'Delete Selected'}
         </button>
         <Pagination
           currentPage={currentPage}
@@ -129,7 +113,7 @@ const Table: React.FC<Props> = (props: Props) => {
           siblingCount={2}
         />
       </div>
-    </main>
+    </div>
   );
 };
 

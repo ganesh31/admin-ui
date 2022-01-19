@@ -17,6 +17,7 @@ interface Props {
 
 const ColumnCell: React.FC<Props> = (props: Props) => {
   const [showSearchBar, setShowSearchBar] = useState(false);
+  const [searchText, setSearchText] = useState('');
 
   const onShowSearchBar = () => {
     setShowSearchBar(true);
@@ -24,6 +25,7 @@ const ColumnCell: React.FC<Props> = (props: Props) => {
 
   const onHideSearchBar = () => {
     setShowSearchBar(false);
+    setSearchText('');
     if (props.onClose) props.onClose(props.id);
   };
 
@@ -32,6 +34,7 @@ const ColumnCell: React.FC<Props> = (props: Props) => {
       columnId: props.id,
       searchText: event.target.value,
     };
+    setSearchText(event.target.value);
     if (props.onSearch) props.onSearch(searchObj);
   };
 
@@ -54,9 +57,10 @@ const ColumnCell: React.FC<Props> = (props: Props) => {
     <th className="text-left p-4">
       <SearchBar
         placeholder={props.value}
+        value={searchText}
         name={props.value}
         onChange={onSearch}
-        onHideSearchBar={onHideSearchBar}
+        onClose={onHideSearchBar}
         showClose
       />
     </th>
