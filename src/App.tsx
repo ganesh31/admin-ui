@@ -10,9 +10,9 @@ interface Member {
 }
 
 const colList: TableColumn[] = [
-  { id: '1', value: 'Name', needSearch: true },
-  { id: '2', value: 'Email', needSearch: true },
-  { id: '3', value: 'Role', needSearch: true },
+  { id: '1', value: 'Name', needSearch: false },
+  { id: '2', value: 'Email', needSearch: false },
+  { id: '3', value: 'Role', needSearch: false },
 ];
 
 const PAGE_SIZE = 10;
@@ -27,6 +27,9 @@ const App: React.FC = () => {
     }[]
   >([]);
 
+  const [selectedIdList, setSelectedIdList] = useState<string[]>([]);
+  const [selectAll, setSelectAll] = useState<boolean>(false);
+
   useEffect(() => {
     const url =
       'https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json';
@@ -38,9 +41,9 @@ const App: React.FC = () => {
           ({ id, name, email, role }) => ({
             id,
             cells: [
-              { id: '1', value: name },
-              { id: '2', value: email },
-              { id: '3', value: role },
+              { id: '1', value: name, colId: '1' },
+              { id: '2', value: email, colId: '2' },
+              { id: '3', value: role, colId: '3' },
             ],
           }),
         );
@@ -48,6 +51,44 @@ const App: React.FC = () => {
         setRowList(rowListData);
       });
   }, []);
+
+  const onToggleSelect = (selectedId: string) => {
+    const selectedIndex = selectedIdList.findIndex((id) => id === selectedId);
+
+    if (selectAll) {
+      setSelectAll(false);
+    }
+    if (selectedIndex === -1) {
+      setSelectedIdList([...selectedIdList, selectedId]);
+    } else {
+      setSelectedIdList([...selectedIdList].filter((id) => id !== selectedId));
+    }
+  };
+
+  const onToggleSelectAll = () => {
+    setSelectAll(!selectAll);
+    setSelectedIdList(rowList.map(({ id }) => id));
+    if (selectAll) {
+      setSelectedIdList([]);
+    }
+  };
+
+  const onDelete = (selectedId: string) => {
+    const newRowList = rowList.filter(({ id }) => id !== selectedId);
+    setRowList(newRowList);
+  };
+
+  const onDeleteSelected = () => {
+    if (selectAll) {
+      setRowList([]);
+      setSelectAll(false);
+    } else {
+      const newRowList = rowList.filter(
+        ({ id }) => !selectedIdList.includes(id),
+      );
+      setRowList(newRowList);
+    }
+  };
 
   const onRemoveFilter = (filterId: string): void => {
     setFilters(filters.filter(({ id }) => id !== filterId));
@@ -119,6 +160,12 @@ const App: React.FC = () => {
       columns={colList}
       noOfRowsPerPage={PAGE_SIZE}
       rows={filteredRows}
+      selectAll={selectAll}
+      selectedIdList={selectedIdList}
+      onSelect={onToggleSelect}
+      onSelectAll={onToggleSelectAll}
+      onDelete={onDelete}
+      onDeleteSelcted={onDeleteSelected}
       onSearch={onSearchByColumn}
       onRemoveFilter={onRemoveFilter}
       onGlobalSearch={onGlobalSearch}

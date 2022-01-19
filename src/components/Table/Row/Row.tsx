@@ -1,12 +1,15 @@
 import React from 'react';
 import { MdEdit, MdDeleteForever } from 'react-icons/md';
+import CheckBox from '../../CheckBox';
 import Cell from '../Cell/Cell';
 import { TableCell } from '../types';
 
 interface Props {
   cells: TableCell[];
   id: string;
-  onSelect: () => void;
+  selected: boolean;
+  onDelete?: (id: string) => void;
+  onSelect: (id: string) => void;
 }
 
 const Row: React.FC<Props> = (props: Props) => {
@@ -16,20 +19,24 @@ const Row: React.FC<Props> = (props: Props) => {
     });
 
     const checkbox = (
-      <td key="0-CheckBox" className="p-4 text-center">
-        <input
-          type="checkbox"
-          key={props.id}
-          id={props.id}
-          name="select"
-          onClick={props.onSelect}></input>
+      <td
+        key="0-CheckBox"
+        className="p-4 text-center flex justify-center items-center">
+        <CheckBox
+          name={props.id}
+          onClick={() => props.onSelect(props.id)}
+          checked={props.selected}
+        />
       </td>
     );
 
     const actions = (
       <td key="Actions" className="flex p-4 text-xl">
         <MdEdit className="mr-3" />
-        <MdDeleteForever className="text-red-500" />
+        <MdDeleteForever
+          className="text-red-500 cursor-pointer"
+          onClick={() => props.onDelete && props.onDelete(props.id)}
+        />
       </td>
     );
 

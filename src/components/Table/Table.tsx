@@ -1,5 +1,4 @@
 import React, { ChangeEvent, useMemo, useState } from 'react';
-import { MdRemoveCircleOutline } from 'react-icons/md';
 import Pagination from '../Pagination';
 import SearchBar from '../SearchBar';
 import Column from './Column/Column';
@@ -18,9 +17,13 @@ interface Props {
   placeholder: string;
   filters: ColumnSearch[];
   noOfRowsPerPage: number;
+  selectAll?: boolean;
+  selectedIdList?: string[];
 
   onSelectAll?: () => void;
   onSelect?: (id: string) => void;
+  onDelete: (id: string) => void;
+  onDeleteSelcted?: () => void;
   onSearch?: (searchObj: SearchObj) => void;
   onGlobalSearch: (searchTex: string) => void;
   onRemoveFilter?: (id: string) => void;
@@ -32,7 +35,6 @@ interface ColumnSearch {
 }
 
 const Table: React.FC<Props> = (props: Props) => {
-  const [focusId, setFocusId] = useState('');
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   const currentTableData: TableRow[] = useMemo(() => {
@@ -74,66 +76,49 @@ const Table: React.FC<Props> = (props: Props) => {
     props.onGlobalSearch(searchText);
   };
 
-  const handleFocus = (id: string) => setFocusId(id);
-
   const renderRows = (): JSX.Element[] => {
     return currentTableData.map(({ id, cells }) => {
+      const rowSelected = props.selectedIdList?.includes(id);
+      // const selected = props.selectAll || rowSelected;
       return (
-        <Row key={id} cells={cells} id={id} onSelect={() => handleSelect(id)} />
-      );
-    });
-  };
-
-  const renderBadge = (): JSX.Element[] => {
-    return props.filters.map(({ searchText, id }) => {
-      const columnName = props.columns.find(
-        ({ id: colId }) => colId === id,
-      )?.value;
-
-      return (
-        <div
+        <Row
           key={id}
-          className={`flex justify-between items-center mr-2 w-fit rounded-lg border ${
-            focusId === id
-              ? 'shadow-sm shadow-slate-500'
-              : 'shadow-sm shadow-slate-400'
-          }`}>
-          <span className="mx-2">
-            <b>{columnName}: </b>
-            {searchText}
-          </span>
-          <MdRemoveCircleOutline
-            className="text-xl"
-            onClick={() => handleRemoveFilter(id)}
-          />
-        </div>
+          cells={cells}
+          id={id}
+          selected={Boolean(rowSelected)}
+          onSelect={() => handleSelect(id)}
+          onDelete={props.onDelete}
+        />
       );
     });
   };
 
   return (
-    <main className="m-52">
-      <div className="w-full h-5 flex">{renderBadge()}</div>
-      <div className="py-1 leading-7">
+    <main className="m-10">
+      {/* <div className="w-full h-5 flex">{renderBadge()}</div> */}
+      <div className="">
         <SearchBar
           name={props.name}
           placeholder={props.placeholder}
           onChange={handleGlobalSearch}
         />
       </div>
-      <table className="w-full">
+      <table className="w-full mt-5">
         <thead>
           <Column
             columns={props.columns}
+            selectAll={Boolean(props.selectAll)}
             onSelectAll={handleSelectAll}
             onSearch={handleSearch}
-            onFocus={handleFocus}
+            onClose={handleRemoveFilter}
           />
         </thead>
         <tbody>{renderRows()}</tbody>
       </table>
       <div className="flex py-3">
-        <button className="ml-5 px-3 rounded-md border border-red-600 text-white bg-red-500">
+        <button
+          className="ml-5 px-3 rounded-md border border-red-600 text-white bg-red-600"
+          onClick={props.onDeleteSelcted}>
           Delete Selected
         </button>
         <Pagination

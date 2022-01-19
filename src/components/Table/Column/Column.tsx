@@ -1,9 +1,11 @@
 import React from 'react';
+import CheckBox from '../../CheckBox';
 import ColumnCell from '../ColumnCell/ColumnCell';
 import { TableColumn } from '../types';
 
 interface Props {
   columns: TableColumn[];
+  selectAll: boolean;
   onSelectAll: () => void;
   onSearch?: ({
     columnId,
@@ -12,7 +14,7 @@ interface Props {
     columnId: string;
     searchText: string;
   }) => void;
-  onFocus: (id: string) => void;
+  onClose: (id: string) => void;
 }
 
 const Column: React.FC<Props> = (props: Props) => {
@@ -24,28 +26,32 @@ const Column: React.FC<Props> = (props: Props) => {
           id={id}
           value={value}
           onSearch={props.onSearch}
-          onFocus={props.onFocus}
           needSearch={needSearch}
+          onClose={props.onClose}
         />
       );
     });
 
     const checkBox = (
       <th className="p-4" key="0-CheckBox">
-        <input
-          type="checkbox"
-          className="w-4 h-4"
-          id="selectAll"
-          name="selectAll"
-          onClick={props.onSelectAll}></input>
+        <CheckBox
+          name="SelectAll"
+          checked={props.selectAll}
+          onClick={props.onSelectAll}
+          size="lg"
+        />
       </th>
     );
 
-    const action = <th className="text-left p-4">Actions</th>;
+    const action = (
+      <th key="action" className="text-left p-4">
+        Actions
+      </th>
+    );
 
     return [checkBox, ...columnList, action];
   };
-  return <tr>{renderCells()}</tr>;
+  return <tr className="h-10">{renderCells()}</tr>;
 };
 
 export default Column;

@@ -35,6 +35,7 @@ const Pagination: React.FC<Props> = ({
   return (
     <ul className="flex list-none">
       <li
+        key="arrowLeft"
         className={`pagination hover:bg-violet-300 hover:cursor-pointer ${
           currentPage === 1 ? 'pointer-events-none' : ''
         }`}
@@ -43,14 +44,20 @@ const Pagination: React.FC<Props> = ({
       </li>
       {paginationRange.map((pageNo) => {
         if (typeof pageNo === 'string' && pageNo === DOTS) {
-          return <li className={`pagination hover:cursor-default`}>&#8230;</li>;
+          return (
+            <li key="dots" className={`pagination hover:cursor-default`}>
+              &#8230;
+            </li>
+          );
         }
         const selected = pageNo === currentPage;
 
         return (
           <li
+            tabIndex={0}
+            key={pageNo}
             className={`pagination  hover:cursor-pointer ${
-              selected ? 'bg-violet-500' : 'hover:bg-violet-300'
+              selected ? 'bg-violet-500 text-white' : 'hover:bg-violet-300'
             }`}
             onClick={() => onPageChange(pageNo as number)}>
             {pageNo}
@@ -58,6 +65,7 @@ const Pagination: React.FC<Props> = ({
         );
       })}
       <li
+        key="arrowRight"
         className={`pagination hover:bg-violet-300 hover:cursor-pointer ${
           currentPage === lastPage ? 'pointer-events-none' : ''
         }`}

@@ -12,7 +12,7 @@ interface Props {
   id: string;
   needSearch?: boolean;
   onSearch?: ({ columnId, searchText }: SearchObj) => void;
-  onFocus: (id: string) => void;
+  onClose: (id: string) => void;
 }
 
 const ColumnCell: React.FC<Props> = (props: Props) => {
@@ -24,6 +24,7 @@ const ColumnCell: React.FC<Props> = (props: Props) => {
 
   const onHideSearchBar = () => {
     setShowSearchBar(false);
+    if (props.onClose) props.onClose(props.id);
   };
 
   const onSearch = (event: ChangeEvent<HTMLInputElement>) => {
@@ -56,7 +57,6 @@ const ColumnCell: React.FC<Props> = (props: Props) => {
         name={props.value}
         onChange={onSearch}
         onHideSearchBar={onHideSearchBar}
-        onFocus={() => props.onFocus(props.id)}
         showClose
       />
     </th>
