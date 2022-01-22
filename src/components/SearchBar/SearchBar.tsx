@@ -15,6 +15,7 @@ const SearchBar = (props: Props) => {
   return (
     <div className="flex w-full justify-center items-center space-x-1">
       <Textfield
+        autoFocus
         value={props.value}
         placeholder={props.placeholder}
         onChange={props.onChange}

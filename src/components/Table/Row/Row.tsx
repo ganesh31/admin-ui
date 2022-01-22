@@ -1,5 +1,4 @@
 import React from 'react';
-import { MdEdit, MdDeleteForever } from 'react-icons/md';
 import CheckBox from '../../CheckBox';
 import Cell from '../Cell/Cell';
 import { TableCell } from '../types';
@@ -8,9 +7,9 @@ interface Props {
   cells: TableCell[];
   id: string;
   selected: boolean;
-  onEnableEdit?: (id: string) => void;
-  onDelete?: (id: string) => void;
   onSelect: (id: string) => void;
+
+  renderRowAction?: () => JSX.Element;
 }
 
 const Row: React.FC<Props> = (props: Props) => {
@@ -31,17 +30,12 @@ const Row: React.FC<Props> = (props: Props) => {
       </td>
     );
 
-    const actions = (
-      <td key="Actions" className="flex p-4 text-xl">
-        <MdEdit
-          className="mr-3"
-          onClick={() => props.onEnableEdit && props.onEnableEdit(props.id)}
-        />
-        <MdDeleteForever
-          className="text-red-500 cursor-pointer"
-          onClick={() => props.onDelete && props.onDelete(props.id)}
-        />
+    const actions = props.renderRowAction ? (
+      <td key="Actions" className="flex p-4 space-x-5 text-xl">
+        {props.renderRowAction()}
       </td>
+    ) : (
+      <td key="Actions" className="flex p-4 space-x-5 text-xl"></td>
     );
 
     return [checkbox, ...cellList, actions];

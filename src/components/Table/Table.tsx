@@ -1,6 +1,5 @@
-import React, { ChangeEvent, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Pagination from '../Pagination';
-import SearchBar from '../SearchBar';
 import Column from './Column/Column';
 import Row from './Row/Row';
 import { TableColumn, TableRow } from './types';
@@ -18,6 +17,7 @@ interface Props {
   selectAll?: boolean;
   selectedIdList?: string[];
 
+  renderActions: (id: string) => JSX.Element;
   onSelectAll?: () => void;
   onSelect?: (id: string) => void;
   onEnableEdit?: (id: string) => void;
@@ -76,8 +76,7 @@ const Table: React.FC<Props> = (props: Props) => {
           id={id}
           selected={Boolean(rowSelected)}
           onSelect={() => handleSelect(id)}
-          onDelete={props.onDelete}
-          onEnableEdit={props.onEnableEdit}
+          renderRowAction={() => props.renderActions(id)}
         />
       );
     });
@@ -97,10 +96,8 @@ const Table: React.FC<Props> = (props: Props) => {
         </thead>
         <tbody>{renderRows()}</tbody>
       </table>
-      <div className="flex py-3">
-        <button
-          className="ml-5 px-3 rounded-md border border-red-600 text-white bg-red-600"
-          onClick={props.onDeleteSelcted}>
+      <div className="flex py-3 space-x-5">
+        <button className="btn btn-danger" onClick={props.onDeleteSelcted}>
           {props.selectedIdList && props.selectedIdList.length > 0
             ? `Delete Selected - (${props.selectedIdList.length})`
             : 'Delete Selected'}

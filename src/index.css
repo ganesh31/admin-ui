@@ -6,4 +6,17 @@
   .pagination {
     @apply px-3 h-8 text-center my-auto mx-1 flex box-border items-center rounded-sm text-sm;
   }
+
+  .btn {
+    @apply px-4 rounded-md focus:outline-none focus:ring focus:ring-offset-2;
+  }
+  .btn-primary {
+    @apply border border-violet-600 bg-violet-500 text-white hover:bg-violet-400 focus:ring-violet-500 focus:ring-opacity-50 active:bg-violet-600;
+  }
+  .btn-secondary {
+    @apply border border-slate-300 bg-slate-300 text-slate-800 hover:bg-slate-200 focus:ring-slate-300 focus:ring-opacity-50 active:bg-slate-400;
+  }
+  .btn-danger {
+    @apply border border-red-600 bg-red-500 text-white hover:bg-red-400 focus:ring-red-500 focus:ring-opacity-70 active:bg-red-600;
+  }
 }
