@@ -1,62 +1,97 @@
-import React from 'react';
+import React, { ReactChild, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { MdClose } from 'react-icons/md';
-
-const modalRoot = document.getElementsByTagName('body');
+import { useKeyPress, useOutsideClick } from '../../hooks';
 
 interface Props {
+  children: ReactChild;
   open: boolean;
   onClose: () => void;
 }
 
-interface State {
-  open: boolean;
-}
-class OverlayModal extends React.Component<Props, State> {
-  el: HTMLDivElement;
-  constructor(props: Props) {
-    super(props);
-    this.el = document.createElement('div');
-    this.state = {
-      open: props.open,
-    };
-  }
+const modalRoot = document.getElementsByTagName('body');
+const element = document.createElement('div');
 
-  componentDidMount() {
+const OverlayModal: React.FC<Props> = (props: Props) => {
+  const [open, setOpen] = useState(props.open);
+  const ref = useRef<HTMLDivElement>(null);
+  const escPressed = useKeyPress('Escape');
+
+  const closeOverlay = () => {
+    setOpen(false);
+    props.onClose();
+  };
+
+  useOutsideClick(ref, closeOverlay);
+
+  useEffect(() => {
+    if (escPressed) {
+      closeOverlay();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [escPressed]);
+
+  useEffect(() => {
     if (modalRoot.length === 0) {
       throw new Error('cannot find body tag');
     }
-    modalRoot[0].appendChild(this.el);
+    modalRoot[0].appendChild(element);
+    return () => {
+      if (modalRoot.length !== 0) modalRoot[0].removeChild(element);
+    };
+  }, []);
+
+  if (!open) {
+    return null;
   }
+  return ReactDOM.createPortal(
+    <div
+      className="fixed z-10 inset-0 overflow-y-auto"
+      aria-labelledby="modal-title"
+      role="dialog"
+      aria-modal="true">
+      <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        {/* <!--
+    Background overlay, show/hide based on modal state.
 
-  componentWillUnmount() {
-    if (modalRoot.length !== 0) modalRoot[0].removeChild(this.el);
-  }
+    Entering: "ease-out duration-300"
+      From: "opacity-0"
+      To: "opacity-100"
+    Leaving: "ease-in duration-200"
+      From: "opacity-100"
+      To: "opacity-0"
+  --> */}
+        <div
+          className="fixed inset-0 bg-slate-500 bg-opacity-75 transition-opacity"
+          aria-hidden="true"></div>
 
-  handleClose = () => {
-    this.setState({
-      open: false,
-    });
-    this.props.onClose();
-  };
+        {/* <!-- This element is to trick the browser into centering the modal contents. --> */}
+        <span
+          className="hidden sm:inline-block sm:align-middle sm:h-screen"
+          aria-hidden="true">
+          &#8203;
+        </span>
 
-  render() {
-    const { open } = this.state;
-    if (!open) {
-      return null;
-    }
-    return ReactDOM.createPortal(
-      <div className="flex justify-center items-center bg-slate-300 bg-opacity-25 h-screen fixed inset-0 overflow-y-auto">
-        <div className="bg-white p-2 relative rounded-lg shadow-md shadow-slate-500 border border-slate-300">
-          <div className="border-2 border-slate-600 text-slate-600 rounded-full absolute top-2 right-2 text-sm flex justify-center items-center">
-            <MdClose className="text-lg" onClick={this.handleClose} />
+        {/* <!--
+    Modal panel, show/hide based on modal state.
+
+    Entering: "ease-out duration-300"
+      From: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+      To: "opacity-100 translate-y-0 sm:scale-100"
+    Leaving: "ease-in duration-200"
+      From: "opacity-100 translate-y-0 sm:scale-100"
+      To: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+  --> */}
+        <div
+          ref={ref}
+          className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="sm:flex sm:items-start">{props.children}</div>
           </div>
-          <div className="p-7">{this.props.children}</div>
         </div>
-      </div>,
-      this.el,
-    );
-  }
-}
+      </div>
+    </div>,
+    element,
+  );
+};
 
 export default OverlayModal;

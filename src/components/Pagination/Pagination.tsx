@@ -14,15 +14,24 @@ const Pagination: React.FC<Props> = ({
   onPageChange,
   totalCount,
   siblingCount = 1,
-  currentPage,
   pageSize,
+  ...props
 }: Props) => {
+  const currentPage =
+    props.currentPage > Math.ceil(totalCount / pageSize)
+      ? Math.ceil(totalCount / pageSize)
+      : props.currentPage;
+
   const paginationRange = usePagination({
     totalCount,
     pageSize,
     siblingCount,
     currentPage,
   });
+
+  if (totalCount < pageSize) {
+    return <></>;
+  }
 
   const onNext = () => onPageChange(currentPage + 1);
   const onPrevious = () => onPageChange(currentPage - 1);

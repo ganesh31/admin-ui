@@ -33,7 +33,7 @@ const Column: React.FC<Props> = (props: Props) => {
     });
 
     const checkBox = (
-      <th className="p-4 relative" key="0-CheckBox">
+      <th className="p-4" key="0-CheckBox">
         <CheckBox
           name="SelectAll"
           checked={props.selectAll}

@@ -19,9 +19,7 @@ const Row: React.FC<Props> = (props: Props) => {
     });
 
     const checkbox = (
-      <td
-        key="0-CheckBox"
-        className="p-4 text-center flex justify-center items-center">
+      <td key="0-CheckBox" className="p-4">
         <CheckBox
           name={props.id}
           onClick={() => props.onSelect(props.id)}
@@ -41,7 +39,16 @@ const Row: React.FC<Props> = (props: Props) => {
     return [checkbox, ...cellList, actions];
   };
 
-  return <tr className="border-y">{renderCells()}</tr>;
+  return (
+    <tr
+      className={`border-y ${
+        props.selected
+          ? 'shadow-md shadow-slate-200 bg-slate-100 opacity-80'
+          : ''
+      } hover:shadow-md hover:shadow-slate-300 transition duration-300 ease-in-out `}>
+      {renderCells()}
+    </tr>
+  );
 };
 
 export default Row;

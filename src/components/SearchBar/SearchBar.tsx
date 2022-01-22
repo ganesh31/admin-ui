@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import { MdClose } from 'react-icons/md';
+import { MdClose, MdOutlineSearch } from 'react-icons/md';
 import Textfield from '../Textfield';
 
 interface Props {
@@ -11,9 +11,9 @@ interface Props {
   showClose?: boolean;
 }
 
-const SearchBar = (props: Props) => {
+const SearchBar: React.FC<Props> = (props: Props) => {
   return (
-    <div className="flex w-full justify-center items-center space-x-1">
+    <div className="flex w-full justify-center items-center relative">
       <Textfield
         autoFocus
         value={props.value}
@@ -21,8 +21,13 @@ const SearchBar = (props: Props) => {
         onChange={props.onChange}
         name={props.name}
       />
+
       {props.showClose && (
-        <MdClose tabIndex={0} className="text-2xl" onClick={props.onClose} />
+        <MdClose
+          tabIndex={0}
+          className="text-2xl absolute right-2 focus:outline-none focus:ring rounded focus:ring-offset focus:ring-violet-400"
+          onClick={props.onClose}
+        />
       )}
     </div>
   );

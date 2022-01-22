@@ -16,10 +16,10 @@ const sizeChart = {
 const CheckBox: React.FC<Props> = (props: Props) => {
   const { size = 'default' } = props;
   return (
-    <div className="flex flex-col justify-center items-center relative">
+    <div className="flex flex-col justify-start items-center relative">
       <input
         type="checkbox"
-        className={`${sizeChart[size]} rounded border-gray-300 text-violet-500 focus:ring-violet-400`}
+        className={`${sizeChart[size]} rounded border-slate-300 text-violet-500 focus:ring-violet-400`}
         id={props.name}
         name={props.name}
         checked={props.checked}

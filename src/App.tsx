@@ -2,6 +2,7 @@ import React, { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { MdOutlineEditNote, MdDeleteForever } from 'react-icons/md';
 import Table from './components';
 import OverlayModal from './components/OverlayModal';
+import Pagination from './components/Pagination';
 import SearchBar from './components/SearchBar';
 import { TableColumn, TableRow } from './components/Table/types';
 import EditTextfiled from './EditTextfiled';
@@ -36,6 +37,14 @@ const App: React.FC = () => {
 
   const [selectedIdList, setSelectedIdList] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  const { firstPageIndex, lastPageIndex } = useMemo(() => {
+    const firstPageIndex = (currentPage - 1) * PAGE_SIZE;
+    const lastPageIndex = firstPageIndex + PAGE_SIZE;
+
+    return { firstPageIndex, lastPageIndex };
+  }, [currentPage]);
 
   useEffect(() => {
     const url =
@@ -59,6 +68,8 @@ const App: React.FC = () => {
       });
   }, []);
 
+  const onPageChange = (pageNo: number) => setCurrentPage(pageNo);
+
   const onToggleSelect = (selectedId: string) => {
     const selectedIndex = selectedIdList.findIndex((id) => id === selectedId);
 
@@ -73,8 +84,12 @@ const App: React.FC = () => {
   };
 
   const onToggleSelectAll = () => {
+    const selectedRows: TableRow[] = [...rowList].slice(
+      firstPageIndex,
+      lastPageIndex,
+    );
     setSelectAll(!selectAll);
-    setSelectedIdList(rowList.map(({ id }) => id));
+    setSelectedIdList(selectedRows.map(({ id }) => id));
     if (selectAll) {
       setSelectedIdList([]);
     }
@@ -93,14 +108,16 @@ const App: React.FC = () => {
 
   const onDeleteSelected = () => {
     if (selectAll) {
-      setRowList([]);
       setSelectAll(false);
-    } else {
-      const newRowList = rowList.filter(
-        ({ id }) => !selectedIdList.includes(id),
-      );
-      setRowList(newRowList);
     }
+    const newRowList = rowList.filter(({ id }) => !selectedIdList.includes(id));
+    setRowList(newRowList);
+    setSelectedIdList([]);
+
+    if (newRowList.length <= firstPageIndex) {
+      setCurrentPage(currentPage - 1);
+    }
+    // setCurrentPage(1);
   };
 
   const onRemoveFilter = (filterId: string): void => {
@@ -111,6 +128,7 @@ const App: React.FC = () => {
     const { value: searchText } = event.target;
 
     setGlobalSearchText(searchText);
+    setCurrentPage(1);
   };
 
   const onGlobalSearchClear = () => setGlobalSearchText('');
@@ -220,11 +238,11 @@ const App: React.FC = () => {
 
   const renderEdit = () => {
     if (!openEdit) {
-      return null;
+      return <></>;
     }
     const rowToEdit = filteredRows.find(({ id }) => id === editRowId);
     if (!rowToEdit) {
-      return null;
+      return <></>;
     }
 
     let cells;
@@ -238,37 +256,39 @@ const App: React.FC = () => {
 
     const disableSave = emptyCellIndex !== -1;
     return (
-      <form>
-        <div className="space-y-10">
-          <h2 className="font-bold text-xl text-center">Edit</h2>
-          <div className="space-y-8 mt-8">
-            {cells.map(({ id, value, colId }) => {
-              const name = colList.find(({ id }) => id === colId)?.value || '';
-              return (
-                <EditTextfiled
-                  key={id}
-                  value={value}
-                  name={name}
-                  onChange={(value) => onEditChange(value, id)}
-                />
-              );
-            })}
-          </div>
-          <div className="space-x-3 w-full flex justify-between items-center">
-            <button
-              className="btn btn-secondary text-lg"
-              onClick={onEditCancel}>
-              Cancel
-            </button>
-            <button
-              className="btn btn-primary text-lg disabled:bg-slate-400"
-              onClick={onEditSave}
-              disabled={disableSave}>
-              Save
-            </button>
-          </div>
+      <div className="w-full p-4 space-y-10">
+        <h2 className="font-bold text-xl text-center text-slate-700">
+          Edit User Data
+        </h2>
+        <div className="space-y-8 mt-8">
+          {cells.map(({ id, value, colId }) => {
+            const name = colList.find(({ id }) => id === colId)?.value || '';
+            return (
+              <EditTextfiled
+                key={id}
+                value={value}
+                name={name}
+                onChange={(value) => onEditChange(value, id)}
+              />
+            );
+          })}
         </div>
-      </form>
+        <div className="bg-slate-50 px-4 py-3  rounded-md flex justify-between">
+          <button
+            onClick={onEditCancel}
+            type="button"
+            className="btn btn-secondary">
+            Cancel
+          </button>
+          <button
+            onClick={onEditSave}
+            disabled={disableSave}
+            type="button"
+            className="btn btn-primary">
+            Save Changes
+          </button>
+        </div>
+      </div>
     );
   };
 
@@ -284,6 +304,11 @@ const App: React.FC = () => {
       />
     </>
   );
+
+  const slicedRowList =
+    filteredRows.length <= PAGE_SIZE
+      ? filteredRows
+      : filteredRows.slice(firstPageIndex, lastPageIndex);
   return (
     <main className="m-10">
       <SearchBar
@@ -296,20 +321,32 @@ const App: React.FC = () => {
       />
       <Table
         columns={colList}
-        noOfRowsPerPage={PAGE_SIZE}
-        rows={filteredRows}
+        rows={slicedRowList}
         selectAll={selectAll}
         selectedIdList={selectedIdList}
         onSelect={onToggleSelect}
         onSelectAll={onToggleSelectAll}
         onDelete={onDelete}
-        onDeleteSelcted={onDeleteSelected}
         onSearch={onSearchByColumn}
         onRemoveFilter={onRemoveFilter}
         filters={filters}
         onEnableEdit={onEnableEdit}
         renderActions={renderRowActions}
       />
+      <footer>
+        <div className="flex py-3 space-x-5">
+          <button className="btn btn-danger" onClick={onDeleteSelected}>
+            {'Delete Selected'}
+          </button>
+          <Pagination
+            currentPage={currentPage}
+            totalCount={filteredRows.length}
+            pageSize={PAGE_SIZE}
+            onPageChange={onPageChange}
+            siblingCount={2}
+          />
+        </div>
+      </footer>
       {openEdit && (
         <OverlayModal open={openEdit} onClose={onEditClose}>
           {renderEdit()}

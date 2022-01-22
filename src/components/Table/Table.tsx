@@ -1,5 +1,4 @@
-import React, { useMemo, useState } from 'react';
-import Pagination from '../Pagination';
+import React from 'react';
 import Column from './Column/Column';
 import Row from './Row/Row';
 import { TableColumn, TableRow } from './types';
@@ -13,7 +12,6 @@ interface Props {
   columns: TableColumn[];
   rows: TableRow[];
   filters: ColumnSearch[];
-  noOfRowsPerPage: number;
   selectAll?: boolean;
   selectedIdList?: string[];
 
@@ -33,15 +31,6 @@ interface ColumnSearch {
 }
 
 const Table: React.FC<Props> = (props: Props) => {
-  const [currentPage, setCurrentPage] = useState<number>(1);
-
-  const currentTableData: TableRow[] = useMemo(() => {
-    const firstPageIndex = (currentPage - 1) * props.noOfRowsPerPage;
-    const lastPageIndex = firstPageIndex + props.noOfRowsPerPage;
-
-    return props.rows.slice(firstPageIndex, lastPageIndex);
-  }, [currentPage, props.noOfRowsPerPage, props.rows]);
-
   const handleSelectAll = (): void => {
     if (props.onSelectAll) props.onSelectAll();
   };
@@ -49,8 +38,6 @@ const Table: React.FC<Props> = (props: Props) => {
   const handleSelect = (id: string): void => {
     if (props.onSelect) props.onSelect(id);
   };
-
-  const handlePageChange = (pageNo: number) => setCurrentPage(pageNo);
 
   const handleRemoveFilter = (filterId: string): void => {
     if (props.onRemoveFilter) props.onRemoveFilter(filterId);
@@ -67,7 +54,7 @@ const Table: React.FC<Props> = (props: Props) => {
   };
 
   const renderRows = (): JSX.Element[] => {
-    return currentTableData.map(({ id, cells }) => {
+    return props.rows.map(({ id, cells }) => {
       const rowSelected = props.selectedIdList?.includes(id);
       return (
         <Row
@@ -96,20 +83,6 @@ const Table: React.FC<Props> = (props: Props) => {
         </thead>
         <tbody>{renderRows()}</tbody>
       </table>
-      <div className="flex py-3 space-x-5">
-        <button className="btn btn-danger" onClick={props.onDeleteSelcted}>
-          {props.selectedIdList && props.selectedIdList.length > 0
-            ? `Delete Selected - (${props.selectedIdList.length})`
-            : 'Delete Selected'}
-        </button>
-        <Pagination
-          currentPage={currentPage}
-          totalCount={props.rows.length}
-          pageSize={props.noOfRowsPerPage}
-          onPageChange={handlePageChange}
-          siblingCount={2}
-        />
-      </div>
     </div>
   );
 };
