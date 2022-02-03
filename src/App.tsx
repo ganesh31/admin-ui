@@ -1,11 +1,10 @@
 import React, { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { MdOutlineEditNote, MdDeleteForever } from 'react-icons/md';
 import Table from './components';
-import OverlayModal from './components/OverlayModal';
 import Pagination from './components/Pagination';
 import SearchBar from './components/SearchBar';
 import { TableColumn, TableRow } from './components/Table/types';
-import EditTextfiled from './EditTextfiled';
+import EditOverlay from './EditOverlay';
 
 interface Member {
   id: string;
@@ -26,14 +25,7 @@ const App: React.FC = () => {
   const [rowList, setRowList] = useState<TableRow[]>([]);
   const [globalSearchText, setGlobalSearchText] = useState<string>('');
   const [editRowId, setEditRowId] = useState<string>('');
-  const [editRowData, setEditRowData] = useState<TableRow | null>(null);
   const [openEdit, setOpenEdit] = useState(false);
-  const [filters, setFilters] = useState<
-    {
-      id: string;
-      searchText: string;
-    }[]
-  >([]);
 
   const [selectedIdList, setSelectedIdList] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState<boolean>(false);
@@ -84,20 +76,32 @@ const App: React.FC = () => {
   };
 
   const onToggleSelectAll = () => {
-    const selectedRows: TableRow[] = [...rowList].slice(
+    setSelectAll(!selectAll);
+    const selectedRows: TableRow[] = [...filteredRows].slice(
       firstPageIndex,
       lastPageIndex,
     );
-    setSelectAll(!selectAll);
     setSelectedIdList(selectedRows.map(({ id }) => id));
     if (selectAll) {
       setSelectedIdList([]);
     }
   };
 
-  const onEnableEdit = (rowId: string) => {
+  const onEditOpen = (rowId: string) => {
     setEditRowId(rowId);
     setOpenEdit(true);
+  };
+
+  const onEditClose = () => {
+    setEditRowId('');
+    setOpenEdit(false);
+  };
+
+  const onEditSave = (editedRow: TableRow): void => {
+    setRowList(
+      rowList.map((row) => (row.id === editedRow.id ? editedRow : row)),
+    );
+    onEditClose();
   };
 
   const onDelete = (selectedId: string) => {
@@ -120,10 +124,6 @@ const App: React.FC = () => {
     // setCurrentPage(1);
   };
 
-  const onRemoveFilter = (filterId: string): void => {
-    setFilters(filters.filter(({ id }) => id !== filterId));
-  };
-
   const onGlobalSearch = (event: ChangeEvent<HTMLInputElement>) => {
     const { value: searchText } = event.target;
 
@@ -131,172 +131,36 @@ const App: React.FC = () => {
     setCurrentPage(1);
   };
 
-  const onGlobalSearchClear = () => setGlobalSearchText('');
-
-  const onSearchByColumn = ({
-    columnId,
-    searchText,
-  }: {
-    columnId: string;
-    searchText: string;
-  }) => {
-    const filterIndex = filters.findIndex(({ id }) => columnId === id);
-    if (filterIndex !== -1) {
-      let newFilter = filters;
-      newFilter[filterIndex].searchText = searchText;
-
-      setFilters([...newFilter]);
-    } else {
-      setFilters([{ id: columnId, searchText }, ...filters]);
-    }
-  };
-
-  const onEditClose = () => {
-    setEditRowData(null);
-    setEditRowId('');
-    setOpenEdit(false);
-  };
-
-  const onEditCancel = (): void => {
-    onEditClose();
-  };
-
-  const onEditSave = (): void => {
-    const editedRowId: number = rowList.findIndex(({ id }) => id === editRowId);
-
-    if (editedRowId === -1) {
-      throw new Error('Unknown row edited');
-    }
-
-    const updatedRowList = [...rowList];
-    if (editRowData === null) {
-      return;
-    }
-    updatedRowList[editedRowId].cells = editRowData.cells;
-
-    setRowList([...updatedRowList]);
-
-    onEditClose();
-  };
-
-  const onEditChange = (value: string, cellId: string): void => {
-    const cellList = rowList.find(({ id }) => id === editRowId)?.cells || [];
-    const rowValues: TableRow = {
-      id: editRowId,
-      cells: [...cellList].map((cell) => {
-        if (cell.id === cellId) {
-          return {
-            ...cell,
-            value,
-          };
-        } else {
-          return cell;
-        }
-      }),
-    };
-
-    setEditRowData(rowValues);
-  };
-
-  const applyFilters = (rowsToFilter: TableRow[]): TableRow[] => {
-    let filterdRow = rowsToFilter;
-    filters.forEach(({ searchText, id }) => {
-      filterdRow = filterdRow.filter(({ cells }) => {
-        const columnIndex = cells.findIndex(
-          ({ colId, value }) => colId === id && value.includes(searchText),
-        );
-        return columnIndex !== -1;
-      });
-    });
-
-    return filterdRow;
+  const onGlobalSearchClear = () => {
+    setGlobalSearchText('');
   };
 
   const getRowsByGlobalSearch = (
     searchText: string,
     rowsToFilter: TableRow[],
-  ) => {
-    console.log('SearchBy GLOBAL');
-
-    return rowsToFilter.filter(({ cells }) =>
+  ) =>
+    rowsToFilter.filter(({ cells }) =>
       cells.some(({ value }) => value.includes(searchText)),
     );
-  };
   const rowsByGlobal: TableRow[] = useMemo(
     () => getRowsByGlobalSearch(globalSearchText, rowList),
     [globalSearchText, rowList],
   );
 
-  const getFilteredRowsGlobalCol = () => {
+  const getFilteredRowsGlobal = () => {
     if (rowList.length === 0 && globalSearchText === '') {
       return rowList;
     }
-    return applyFilters(rowsByGlobal);
+    return rowsByGlobal;
   };
 
-  const filteredRows = getFilteredRowsGlobalCol();
-
-  const renderEdit = () => {
-    if (!openEdit) {
-      return <></>;
-    }
-    const rowToEdit = filteredRows.find(({ id }) => id === editRowId);
-    if (!rowToEdit) {
-      return <></>;
-    }
-
-    let cells;
-    if (editRowData === null) {
-      cells = rowToEdit.cells;
-    } else {
-      cells = editRowData.cells;
-    }
-
-    const emptyCellIndex = cells.findIndex(({ value }) => value === '');
-
-    const disableSave = emptyCellIndex !== -1;
-    return (
-      <div className="w-full p-4 space-y-10">
-        <h2 className="font-bold text-xl text-center text-slate-700">
-          Edit User Data
-        </h2>
-        <div className="space-y-8 mt-8">
-          {cells.map(({ id, value, colId }) => {
-            const name = colList.find(({ id }) => id === colId)?.value || '';
-            return (
-              <EditTextfiled
-                key={id}
-                value={value}
-                name={name}
-                onChange={(value) => onEditChange(value, id)}
-              />
-            );
-          })}
-        </div>
-        <div className="bg-slate-50 px-4 py-3  rounded-md flex justify-between">
-          <button
-            onClick={onEditCancel}
-            type="button"
-            className="btn btn-secondary">
-            Cancel
-          </button>
-          <button
-            onClick={onEditSave}
-            disabled={disableSave}
-            type="button"
-            className="btn btn-primary">
-            Save Changes
-          </button>
-        </div>
-      </div>
-    );
-  };
+  const filteredRows = getFilteredRowsGlobal();
 
   const renderRowActions = (id: string) => (
     <>
       <MdOutlineEditNote
         className=" cursor-pointer"
-        onClick={() => onEnableEdit(id)}
+        onClick={() => onEditOpen(id)}
       />
       <MdDeleteForever
         className="text-red-500 cursor-pointer"
@@ -309,6 +173,17 @@ const App: React.FC = () => {
     filteredRows.length <= PAGE_SIZE
       ? filteredRows
       : filteredRows.slice(firstPageIndex, lastPageIndex);
+
+  const getRowForEdit = () => {
+    const rowToEdit = filteredRows.find(({ id }) => id === editRowId);
+
+    if (rowToEdit === undefined) {
+      throw new Error('Cannot Edit unknown row');
+    }
+
+    return rowToEdit;
+  };
+
   return (
     <main className="m-10">
       <SearchBar
@@ -327,10 +202,7 @@ const App: React.FC = () => {
         onSelect={onToggleSelect}
         onSelectAll={onToggleSelectAll}
         onDelete={onDelete}
-        onSearch={onSearchByColumn}
-        onRemoveFilter={onRemoveFilter}
-        filters={filters}
-        onEnableEdit={onEnableEdit}
+        onEnableEdit={onEditOpen}
         renderActions={renderRowActions}
       />
       <footer>
@@ -348,9 +220,14 @@ const App: React.FC = () => {
         </div>
       </footer>
       {openEdit && (
-        <OverlayModal open={openEdit} onClose={onEditClose}>
-          {renderEdit()}
-        </OverlayModal>
+        <EditOverlay
+          open={openEdit}
+          colList={colList}
+          editRow={getRowForEdit()}
+          onCancel={onEditClose}
+          onClose={onEditClose}
+          onSave={onEditSave}
+        />
       )}
     </main>
   );

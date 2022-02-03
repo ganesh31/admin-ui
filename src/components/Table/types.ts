@@ -14,4 +14,4 @@ export interface TableCell {
 export interface TableRow {
   id: string;
   cells: TableCell[]
-}
+} 

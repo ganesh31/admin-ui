@@ -11,7 +11,6 @@ interface SearchObj {
 interface Props {
   columns: TableColumn[];
   rows: TableRow[];
-  filters: ColumnSearch[];
   selectAll?: boolean;
   selectedIdList?: string[];
 
@@ -23,11 +22,6 @@ interface Props {
   onDeleteSelcted?: () => void;
   onSearch?: (searchObj: SearchObj) => void;
   onRemoveFilter?: (id: string) => void;
-}
-
-interface ColumnSearch {
-  id: string;
-  searchText: string;
 }
 
 const Table: React.FC<Props> = (props: Props) => {

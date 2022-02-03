@@ -1,5 +1,5 @@
-import React, { ChangeEvent, useState } from 'react';
-import Textfield from './components/Textfield';
+import { ChangeEvent, FC, useState } from 'react';
+import Textfield from '../components/Textfield';
 
 interface Props {
   name: string;
@@ -7,7 +7,7 @@ interface Props {
   onChange: (value: string) => void;
 }
 
-const EditTextfiled = (props: Props) => {
+const EditTextfield: FC<Props> = (props: Props) => {
   const [value, setValue] = useState(props.value || '');
   const handleOnChange = (event: ChangeEvent<HTMLInputElement>) => {
     setValue(event.target.value);
@@ -23,4 +23,4 @@ const EditTextfiled = (props: Props) => {
   );
 };
 
-export default EditTextfiled;
+export default EditTextfield;
