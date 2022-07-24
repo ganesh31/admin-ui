@@ -1,17 +1,19 @@
 export interface TableColumn {
   id: string;
-  value: string;
-  needSearch?: boolean;
-  isEditable?: boolean;
+  value: string | React.ReactNode;
+  columnMapping?: string;
+  sticky?: boolean;
 }
 
 export interface TableCell {
   id: string;
-  value: string;
-  colId?: string;
+  value: string | React.ReactNode;
+  columnMapping?: string;
+  sticky?: boolean;
 }
 
 export interface TableRow {
   id: string;
-  cells: TableCell[]
-} 
+  cells: TableCell[];
+  selected?: boolean;
+}

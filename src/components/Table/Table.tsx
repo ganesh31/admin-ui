@@ -1,82 +1,74 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
+import Pagination from '../Pagination';
 import Column from './Column/Column';
 import Row from './Row/Row';
 import { TableColumn, TableRow } from './types';
 
-interface SearchObj {
-  columnId: string;
-  searchText: string;
-}
-
 interface Props {
   columns: TableColumn[];
-  rows: TableRow[];
-  selectAll?: boolean;
-  selectedIdList?: string[];
-
-  renderActions: (id: string) => JSX.Element;
-  onSelectAll?: () => void;
-  onSelect?: (id: string) => void;
-  onEnableEdit?: (id: string) => void;
-  onDelete: (id: string) => void;
-  onDeleteSelcted?: () => void;
-  onSearch?: (searchObj: SearchObj) => void;
-  onRemoveFilter?: (id: string) => void;
+  rows?: TableRow[];
+  pageSize?: number;
+  siblingCount?: number;
 }
 
 const Table: React.FC<Props> = (props: Props) => {
-  const handleSelectAll = (): void => {
-    if (props.onSelectAll) props.onSelectAll();
-  };
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const handleSelect = (id: string): void => {
-    if (props.onSelect) props.onSelect(id);
-  };
+  const { firstPageIndex, lastPageIndex, PAGE_SIZE } = useMemo(() => {
+    const PAGE_SIZE = props.pageSize || props.rows?.length || 0;
+    const firstPageIndex = (currentPage - 1) * PAGE_SIZE;
+    const lastPageIndex = firstPageIndex + PAGE_SIZE;
+    return { firstPageIndex, lastPageIndex, PAGE_SIZE };
+  }, [currentPage, props.pageSize, props.rows?.length]);
 
-  const handleRemoveFilter = (filterId: string): void => {
-    if (props.onRemoveFilter) props.onRemoveFilter(filterId);
-  };
+  const handlePageChange = (pageNo: number) => setCurrentPage(pageNo);
 
-  const handleSearch = ({
-    columnId,
-    searchText,
-  }: {
-    columnId: string;
-    searchText: string;
-  }) => {
-    if (props.onSearch) props.onSearch({ columnId, searchText });
-  };
+  const renderRows = (): JSX.Element[] | undefined => {
+    if (!props.rows) return undefined;
 
-  const renderRows = (): JSX.Element[] => {
-    return props.rows.map(({ id, cells }) => {
-      const rowSelected = props.selectedIdList?.includes(id);
-      return (
+    if (props.rows.length <= PAGE_SIZE) {
+      return props.rows.map(({ id, cells, selected }) => (
         <Row
           key={id}
           cells={cells}
+          columns={props.columns}
           id={id}
-          selected={Boolean(rowSelected)}
-          onSelect={() => handleSelect(id)}
-          renderRowAction={() => props.renderActions(id)}
+          selected={selected || false}
         />
-      );
-    });
+      ));
+    }
+    return props.rows
+      .slice(firstPageIndex, lastPageIndex)
+      .map(({ id, cells, selected }) => (
+        <Row
+          key={id}
+          cells={cells}
+          columns={props.columns}
+          id={id}
+          selected={selected || false}
+        />
+      ));
   };
 
   return (
-    <div>
+    <div className="overflow-auto">
       <table className="w-full mt-5">
         <thead>
-          <Column
-            columns={props.columns}
-            selectAll={Boolean(props.selectAll)}
-            onSelectAll={handleSelectAll}
-            onSearch={handleSearch}
-            onClose={handleRemoveFilter}
-          />
+          <Column columns={props.columns} />
         </thead>
         <tbody>{renderRows()}</tbody>
       </table>
+      {props.pageSize !== undefined && (
+        <div className="w-full flex align-middle justify-center py-4">
+          <Pagination
+            totalCount={props.rows?.length || 0}
+            pageSize={PAGE_SIZE}
+            currentPage={currentPage}
+            siblingCount={props.siblingCount || 2}
+            onPageChange={handlePageChange}
+          />
+        </div>
+      )}
     </div>
   );
 };

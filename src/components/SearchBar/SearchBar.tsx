@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import { MdClose, MdOutlineSearch } from 'react-icons/md';
+import { MdClose } from 'react-icons/md';
 import Textfield from '../Textfield';
 
 interface Props {

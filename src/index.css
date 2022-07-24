@@ -11,7 +11,7 @@
     @apply px-4 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 text-base font-medium focus:ring-violet-500 sm:w-auto sm:text-sm;
   }
   .btn-primary {
-    @apply border border-transparent  bg-violet-600 text-white hover:bg-violet-700;
+    @apply border border-transparent disabled:bg-violet-400 bg-violet-600 text-white hover:bg-violet-700;
   }
   .btn-secondary {
     @apply border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;

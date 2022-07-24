@@ -1,55 +1,22 @@
 import React from 'react';
-import CheckBox from '../../CheckBox';
-import ColumnCell from '../ColumnCell/ColumnCell';
+import Cell from '../Cell/Cell';
 import { TableColumn } from '../types';
 
 interface Props {
   columns: TableColumn[];
-  selectAll: boolean;
-  onSelectAll: () => void;
-  onSearch?: ({
-    columnId,
-    searchText,
-  }: {
-    columnId: string;
-    searchText: string;
-  }) => void;
-  onClose: (id: string) => void;
 }
 
 const Column: React.FC<Props> = (props: Props) => {
   const renderCells = () => {
-    const columnList = props.columns.map(({ id, value, needSearch }) => {
+    const columnList = props.columns.map(({ id, value, sticky }) => {
       return (
-        <ColumnCell
-          key={id}
-          id={id}
-          value={value}
-          onSearch={props.onSearch}
-          needSearch={needSearch}
-          onClose={props.onClose}
-        />
+        <Cell key={id} header sticky={sticky}>
+          {value}
+        </Cell>
       );
     });
 
-    const checkBox = (
-      <th className="p-4" key="0-CheckBox">
-        <CheckBox
-          name="SelectAll"
-          checked={props.selectAll}
-          onClick={props.onSelectAll}
-          size="lg"
-        />
-      </th>
-    );
-
-    const action = (
-      <th key="action" className="text-left p-4">
-        Actions
-      </th>
-    );
-
-    return [checkBox, ...columnList, action];
+    return columnList;
   };
   return <tr className="h-10">{renderCells()}</tr>;
 };
